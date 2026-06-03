@@ -5,7 +5,14 @@ from langchain_text_splitters import RecursiveCharacterTextSplitter
 from langchain_huggingface import HuggingFaceEmbeddings
 from langchain_chroma import Chroma
 
-CHROMA_PATH = "./chroma_db"
+import tempfile
+
+# Use writeable temp directory on Linux (Railway/production) to avoid permission errors, local path on Windows
+if os.name == "nt":
+    CHROMA_PATH = "./chroma_db"
+else:
+    CHROMA_PATH = os.path.join(tempfile.gettempdir(), "chroma_db")
+
 COLLECTION  = "videos"
 
 # Module-level singleton — prevents multiple processes opening the SQLite file
