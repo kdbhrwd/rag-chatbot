@@ -98,7 +98,15 @@ async def chat_stream(req: ChatRequest):
             raw_history.append({"role": "assistant", "content": full_response or "[streamed]"})
             chat_sessions[req.session_id] = raw_history[-20:]
 
-    return StreamingResponse(generate(), media_type="text/event-stream")
+    return StreamingResponse(
+        generate(),
+        media_type="text/event-stream",
+        headers={
+            "Cache-Control": "no-cache",
+            "Connection": "keep-alive",
+            "X-Accel-Buffering": "no"
+        }
+    )
 
 @app.delete("/api/chat/{session_id}")
 async def clear_session(session_id: str):

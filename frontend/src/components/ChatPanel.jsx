@@ -123,17 +123,22 @@ export default function ChatPanel({ sessionId }) {
 
       const reader  = res.body.getReader()
       const decoder = new TextDecoder()
+      let streamBuffer = ''
 
       while (true) {
         const { done, value } = await reader.read()
         if (done) break
 
-        const raw   = decoder.decode(value, { stream: true })
-        const lines = raw.split('\n').filter(l => l.startsWith('data: '))
+        streamBuffer += decoder.decode(value, { stream: true })
+        const lines = streamBuffer.split('\n')
+        streamBuffer = lines.pop()
 
         for (const line of lines) {
+          const trimmed = line.trim()
+          if (!trimmed.startsWith('data: ')) continue
+
           try {
-            const payload = JSON.parse(line.slice(6))
+            const payload = JSON.parse(trimmed.slice(6))
 
             if (payload.type === 'sources') {
               setMessages(prev => {
@@ -160,7 +165,7 @@ export default function ChatPanel({ sessionId }) {
                 return next
               })
             }
-          } catch { /* malformed chunk — skip */ }
+          } catch { /* wait for next chunk if partial */ }
         }
       }
     } catch (err) {
