@@ -37,12 +37,26 @@ def get_youtube_data(url: str) -> dict:
         transcript_text = f"[Transcript unavailable: {e}]"
 
     # --- Metadata via yt-dlp (no API key) ---
-    cmd = [YT_DLP, "--dump-json", "--no-download", "--no-warnings", url]
-    result = subprocess.run(cmd, capture_output=True, text=True, timeout=60)
-    if result.returncode != 0:
-        raise RuntimeError(f"yt-dlp metadata error: {result.stderr[:300]}")
-
-    meta = json.loads(result.stdout)
+    try:
+        cmd = [YT_DLP, "--dump-json", "--no-download", "--no-warnings", url]
+        result = subprocess.run(cmd, capture_output=True, text=True, timeout=60)
+        if result.returncode != 0:
+            raise RuntimeError(result.stderr[:300])
+        meta = json.loads(result.stdout)
+    except Exception as e:
+        print(f"Warning: yt-dlp YouTube metadata failed: {e}")
+        meta = {
+            "title": f"YouTube Video {video_id}",
+            "uploader": "YouTube Creator",
+            "view_count": 0,
+            "like_count": 0,
+            "comment_count": 0,
+            "duration": 0,
+            "upload_date": "Unknown",
+            "tags": [],
+            "description": f"Metadata extraction failed because YouTube blocked the cloud IP (Sign-in required). {e}",
+            "thumbnail": ""
+        }
 
     views    = int(meta.get("view_count", 0) or 0)
     likes    = int(meta.get("like_count", 0) or 0)
@@ -75,12 +89,26 @@ def get_instagram_data(url: str) -> dict:
     Works for public Instagram Reels.
     """
     # Metadata
-    cmd = [YT_DLP, "--dump-json", "--no-download", "--no-warnings", url]
-    result = subprocess.run(cmd, capture_output=True, text=True, timeout=60)
-    if result.returncode != 0:
-        raise RuntimeError(f"yt-dlp Instagram error: {result.stderr[:300]}")
-
-    meta = json.loads(result.stdout)
+    try:
+        cmd = [YT_DLP, "--dump-json", "--no-download", "--no-warnings", url]
+        result = subprocess.run(cmd, capture_output=True, text=True, timeout=60)
+        if result.returncode != 0:
+            raise RuntimeError(result.stderr[:300])
+        meta = json.loads(result.stdout)
+    except Exception as e:
+        print(f"Warning: yt-dlp Instagram metadata failed: {e}")
+        meta = {
+            "title": "Instagram Reel",
+            "uploader": "Instagram Creator",
+            "view_count": 0,
+            "like_count": 0,
+            "comment_count": 0,
+            "duration": 0,
+            "upload_date": "Unknown",
+            "tags": [],
+            "description": f"Instagram metadata extraction failed. {e}",
+            "id": "ig_fallback"
+        }
 
     # Download audio for Whisper
     audio_path = os.path.join(tempfile.gettempdir(), f"ig_{meta.get('id','vid')}.mp3")
