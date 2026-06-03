@@ -1,7 +1,13 @@
 import React, { useState, useRef, useEffect, useCallback } from 'react'
 import { Send, RotateCcw, Zap } from 'lucide-react'
 
-const API = import.meta.env.VITE_API_URL || 'http://localhost:8000'
+const getCleanApiUrl = () => {
+  let url = import.meta.env.VITE_API_URL || 'http://localhost:8000';
+  url = url.trim().replace(/\/+$/, '');
+  url = url.replace(/\/api\/health$/, '').replace(/\/api$/, '');
+  return url;
+};
+const API = getCleanApiUrl();
 
 const SUGGESTIONS = [
   'Why did Video A get more engagement than Video B?',

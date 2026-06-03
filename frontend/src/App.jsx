@@ -3,7 +3,13 @@ import { Youtube, Instagram, Zap, AlertCircle, ChevronRight, BarChart3, Database
 import VideoCard from './components/VideoCard'
 import ChatPanel from './components/ChatPanel'
 
-const API = import.meta.env.VITE_API_URL || 'http://localhost:8000'
+const getCleanApiUrl = () => {
+  let url = import.meta.env.VITE_API_URL || 'http://localhost:8000';
+  url = url.trim().replace(/\/+$/, '');
+  url = url.replace(/\/api\/health$/, '').replace(/\/api$/, '');
+  return url;
+};
+const API = getCleanApiUrl();
 
 // ─── tiny hook to get a stable session id ────────────────────────────────────
 function useSession() {
