@@ -1,0 +1,17 @@
+fastapi
+uvicorn[standard]
+python-dotenv
+langchain
+langchain-google-genai
+langchain-huggingface
+langchain-chroma
+langchain-community
+langgraph
+chromadb
+sentence-transformers
+youtube-transcript-api
+yt-dlp
+faster-whisper
+pydantic
+httpx
+setuptools
