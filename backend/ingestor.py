@@ -5,19 +5,17 @@ from langchain_text_splitters import RecursiveCharacterTextSplitter
 from langchain_huggingface import HuggingFaceEmbeddings
 from langchain_chroma import Chroma
 
-# Use a new directory name so Docker doesn't copy an existing root-owned folder from local dev
-CHROMA_PATH = "./chroma_db_runtime"
-
 COLLECTION  = "videos"
 
 # Module-level singleton — prevents multiple processes opening the SQLite file
 _chroma_client = None
 
 
-def _get_client() -> chromadb.PersistentClient:
+def _get_client():
     global _chroma_client
     if _chroma_client is None:
-        _chroma_client = chromadb.PersistentClient(path=CHROMA_PATH)
+        # EphemeralClient runs completely in-memory, avoiding all SQLite and filesystem permission errors
+        _chroma_client = chromadb.EphemeralClient()
     return _chroma_client
 
 
@@ -89,12 +87,4 @@ def ingest_video(video_data: dict, label: str) -> dict:
 
 def clear_vectorstore():
     global _chroma_client
-    # Release the client handle so Windows unlocks the SQLite file
-    if _chroma_client is not None:
-        try:
-            _chroma_client.reset()
-        except Exception:
-            pass
-        _chroma_client = None
-    if os.path.exists(CHROMA_PATH):
-        shutil.rmtree(CHROMA_PATH)
+    _chroma_client = None
