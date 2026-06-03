@@ -5,7 +5,11 @@ import ChatPanel from './components/ChatPanel'
 
 const getCleanApiUrl = () => {
   let url = import.meta.env.VITE_API_URL || 'http://localhost:8000';
-  url = url.trim().replace(/\/+$/, '');
+  url = url.trim();
+  if (url && !/^https?:\/\//i.test(url)) {
+    url = `https://${url}`;
+  }
+  url = url.replace(/\/+$/, '');
   url = url.replace(/\/api\/health$/, '').replace(/\/api$/, '');
   return url;
 };
