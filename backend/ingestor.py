@@ -26,13 +26,19 @@ def _get_client() -> chromadb.PersistentClient:
     return _chroma_client
 
 
+_embeddings_instance = None
+
+
 def get_embeddings():
     # Free local embeddings — runs on CPU, no API key needed
-    return HuggingFaceEmbeddings(
-        model_name="sentence-transformers/all-MiniLM-L6-v2",
-        model_kwargs={"device": "cpu"},
-        encode_kwargs={"normalize_embeddings": True},
-    )
+    global _embeddings_instance
+    if _embeddings_instance is None:
+        _embeddings_instance = HuggingFaceEmbeddings(
+            model_name="sentence-transformers/all-MiniLM-L6-v2",
+            model_kwargs={"device": "cpu"},
+            encode_kwargs={"normalize_embeddings": True},
+        )
+    return _embeddings_instance
 
 
 def get_vectorstore():
