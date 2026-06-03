@@ -112,3 +112,62 @@ async def chat_stream(req: ChatRequest):
 async def clear_session(session_id: str):
     chat_sessions.pop(session_id, None)
     return {"status": "cleared"}
+
+@app.get("/api/test-db")
+async def test_db():
+    import tempfile
+    import sqlite3
+    import sys
+    
+    results = []
+    paths = [
+        "./chroma_db_test.sqlite",
+        "./chroma_db_runtime/chroma_db_test.sqlite",
+        os.path.join(tempfile.gettempdir(), "chroma_db_test.sqlite"),
+        "/tmp/chroma_db_test.sqlite",
+    ]
+    
+    for p in paths:
+        abs_p = os.path.abspath(p)
+        parent = os.path.dirname(abs_p)
+        info = {
+            "path": p,
+            "abs_path": abs_p,
+            "parent_exists": os.path.exists(parent),
+            "parent_writable": os.access(parent, os.W_OK) if os.path.exists(parent) else False,
+            "write_file": "not_tested",
+            "sqlite_write": "not_tested",
+            "error": None
+        }
+        try:
+            if not os.path.exists(parent):
+                os.makedirs(parent, exist_ok=True)
+                info["parent_created"] = True
+            
+            # test file write
+            test_file = abs_p + ".txt"
+            with open(test_file, "w") as f:
+                f.write("test")
+            os.remove(test_file)
+            info["write_file"] = "success"
+            
+            # test sqlite write
+            conn = sqlite3.connect(abs_p)
+            cursor = conn.cursor()
+            cursor.execute("CREATE TABLE test (id INTEGER PRIMARY KEY, val TEXT)")
+            cursor.execute("INSERT INTO test (val) VALUES ('hello')")
+            conn.commit()
+            conn.close()
+            if os.path.exists(abs_p):
+                os.remove(abs_p)
+            info["sqlite_write"] = "success"
+        except Exception as e:
+            info["error"] = str(e)
+        results.append(info)
+        
+    return {
+        "os": os.name,
+        "sys_executable": sys.executable,
+        "cwd": os.getcwd(),
+        "results": results
+    }
