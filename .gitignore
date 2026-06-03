@@ -1,6 +1,7 @@
 backend/.env
 backend/venv/
 backend/chroma_db/
+backend/chroma_db_runtime/
 backend/__pycache__/
 *.pyc
 *.pyo

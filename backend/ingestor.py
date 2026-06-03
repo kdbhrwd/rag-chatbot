@@ -5,13 +5,8 @@ from langchain_text_splitters import RecursiveCharacterTextSplitter
 from langchain_huggingface import HuggingFaceEmbeddings
 from langchain_chroma import Chroma
 
-import tempfile
-
-# Use writeable temp directory on Linux (Railway/production) to avoid permission errors, local path on Windows
-if os.name == "nt":
-    CHROMA_PATH = "./chroma_db"
-else:
-    CHROMA_PATH = os.path.join(tempfile.gettempdir(), "chroma_db")
+# Use a new directory name so Docker doesn't copy an existing root-owned folder from local dev
+CHROMA_PATH = "./chroma_db_runtime"
 
 COLLECTION  = "videos"
 
